@@ -87,7 +87,7 @@ def getStockDataVec(key):
 	vec = []
 	lines = open("Binance_BTCUSDT_1h.csv", "r").read().splitlines()
 
-	for line in lines[2:]:
+	for line in lines[2:500]:
 		vec.append(float(line.split(",")[6]))
 
 	vec.reverse()
@@ -113,7 +113,7 @@ stock_name, window_size, episode_count = '^BTC', 12,5
 
 agent = Agent(window_size)
 data = getStockDataVec(stock_name)
-l = len(data) - 1
+l = len(data) - 5
 batch_size = 32
 
 for e in range(episode_count + 1):
@@ -138,7 +138,7 @@ for e in range(episode_count + 1):
 			bought_price = agent.inventory.pop(0)
 			reward = max(data[t] - bought_price, 0)
 			total_profit += data[t] - bought_price
-			print("Sell: " + formatPrice(data[t]) + " | Profit: " + formatPrice(data[t] - bought_price))
+			print("Sell: " + formatPrice(data[t]) + " | Profit: " + formatPrice(data[t] - bought_price) + "| Total Profits:" + str(total_profit))
 
 		done = True if t == l - 1 else False
 		agent.memory.append((state, action, reward, next_state, done))
