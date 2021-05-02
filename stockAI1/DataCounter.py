@@ -1,5 +1,8 @@
+import matplotlib.pyplot as plt
+
 def get_mining_profits():
     data_matrix = []
+    dates = []
     lines = open("mining_stats-2021-03-30.csv", "r").read().splitlines()
     length = len(lines)
     count = 0
@@ -12,10 +15,11 @@ def get_mining_profits():
             if count % 12 == 0:
                 # average profitablity for the hour
                 data_matrix.append(total / 12)
+                dates.append(line.split(",")[0])
                 total = 0
                 count = 0
     data_matrix.reverse()
-    return data_matrix
+    return data_matrix, dates
 
 def get_crypto_data():
     data = []
@@ -28,6 +32,23 @@ def get_crypto_data():
     return data
 
 
+m, d =get_mining_profits()
+c = get_crypto_data()
+print("length: " + str(len(m)) + " " + str ( len(c)))
+for x in range(len(m)):
+    print(d[x])
+    print(m[x])
+    print(c[x])
 
-# print(get_mining_profits())
-# print(get_crypto_data())
+
+# plotting the points
+plt.plot(d, m)
+plt.xlabel('x - axis')
+plt.ylabel('y - axis')
+plt.title('Mining rate over time')
+plt.show()
+plt.plot(d, c[:61])
+plt.xlabel('x - axis')
+plt.ylabel('y - axis')
+plt.title('volume over time')
+plt.show()

@@ -15,7 +15,7 @@ import os
 # print(os.listdir("../working"))
 # Any results you write to the current directory are saved as output.
 
-
+import matplotlib.pyplot as plt
 
 import keras
 from keras.models import Sequential
@@ -87,7 +87,7 @@ def getStockDataVec(key):
 	vec = []
 	lines = open("Binance_BTCUSDT_1h.csv", "r").read().splitlines()
 
-	for line in lines[2:500]:
+	for line in lines[2:]:
 		vec.append(float(line.split(",")[6]))
 
 	vec.reverse()
@@ -109,13 +109,14 @@ def getState(data, t, n):
 	return np.array([res])
 
 
-stock_name, window_size, episode_count = '^BTC', 12,5
+stock_name, window_size, episode_count = '^BTC', 12, 4
 
 agent = Agent(window_size)
 data = getStockDataVec(stock_name)
-l = len(data) - 5
+l = len(data) - 1
 batch_size = 32
 
+data_sets = []
 for e in range(episode_count + 1):
 	print("Episode " + str(e) + "/" + str(episode_count))
 	state = getState(data, 0, window_size + 1)
@@ -123,7 +124,10 @@ for e in range(episode_count + 1):
 	total_profit = 0
 	agent.inventory = []
 
-	for t in range(l):
+	data_set = []
+	set_size = 50
+	for t in range(set_size):
+
 		action = agent.act(state)
 
 		# sit
@@ -139,6 +143,7 @@ for e in range(episode_count + 1):
 			reward = max(data[t] - bought_price, 0)
 			total_profit += data[t] - bought_price
 			print("Sell: " + formatPrice(data[t]) + " | Profit: " + formatPrice(data[t] - bought_price) + "| Total Profits:" + str(total_profit))
+			data_set.append(total_profit)
 
 		done = True if t == l - 1 else False
 		agent.memory.append((state, action, reward, next_state, done))
@@ -152,5 +157,22 @@ for e in range(episode_count + 1):
 		if len(agent.memory) > batch_size:
 			agent.expReplay(batch_size)
 
+
+	data_sets.append(data_set)
+
+
+
 	if e % 10 == 0:
 		agent.model.save("../working/model_ep" + str(e))
+
+
+counter = 0
+for x in data_sets:
+	print(x)
+	counter += 1
+	plt.plot(x, list(range(len(x))), label="episode" + str(counter))
+plt.xlabel('x - axis')
+plt.ylabel('y - axis')
+plt.title('AI over Time')
+plt.legend()
+plt.show()
